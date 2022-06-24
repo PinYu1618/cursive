@@ -14,7 +14,6 @@ use termion::event::MouseButton as TMouseButton;
 use termion::event::MouseEvent as TMouseEvent;
 use termion::input::{Events, MouseTerminal, TermRead};
 use termion::raw::{IntoRawMode, RawTerminal};
-use termion::screen::AlternateScreen;
 use termion::style as tstyle;
 
 use crate::backend;
@@ -29,11 +28,11 @@ use std::io::{BufWriter, Write};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
-/// Backend using termion
+/// Backend using termion without alternate screen
 pub struct Backend {
     // Do we want to make this generic on the writer?
     terminal:
-        RefCell<AlternateScreen<MouseTerminal<RawTerminal<BufWriter<File>>>>>,
+        RefCell<MouseTerminal<RawTerminal<BufWriter<File>>>>,
     current_style: Cell<theme::ColorPair>,
 
     // Inner state required to parse input
@@ -126,10 +125,10 @@ impl Backend {
         // Use a ~8MB buffer
         // Should be enough for a single screen most of the time.
         let terminal =
-            RefCell::new(AlternateScreen::from(MouseTerminal::from(
+            RefCell::new(MouseTerminal::from(
                 BufWriter::with_capacity(8_000_000, output_file)
                     .into_raw_mode()?,
-            )));
+            ));
 
         write!(terminal.borrow_mut(), "{}", termion::cursor::Hide)?;
 
